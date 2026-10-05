@@ -1,51 +1,71 @@
-import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        // Phase 1 - Adapter
+        Scanner scanner = new Scanner(System.in);
+
+        // Adapter setup
         LegacyFirewall legacyFirewall = new LegacyFirewall();
         SecurityLog firewall = new FirewallAdapter(legacyFirewall);
 
-        firewall.logEvent("Suspicious network activity detected.");
-        firewall.setSeverity(5);
+        // Security event logging
+        System.out.println("=== SECURITY EVENT LOG ===");
+
+        System.out.print("Enter security event message: ");
+        String message = scanner.nextLine();
+
+        System.out.print("Enter severity level: ");
+        int severity = scanner.nextInt();
+        scanner.nextLine();
+
+        firewall.logEvent(message);
+        firewall.setSeverity(severity);
 
         System.out.println();
 
-        // Phase 2 - Create the security subsystems
-        NetworkTrafficController network = new NetworkTrafficController();
-        UserAccessManager users = new UserAccessManager();
-        EncryptionService encryption = new EncryptionService();
+        // Create security subsystems
+        NetworkTrafficController network =
+                new NetworkTrafficController();
 
-        List<String> compromisedUsers = List.of(
-                "admin_temp",
-                "guest_user_1",
-                "service_acct"
-        );
+        UserAccessManager users =
+                new UserAccessManager();
 
-        // Emergency Breach
-        System.out.println("=== EMERGENCY BREACH ===");
+        EncryptionService encryption =
+                new EncryptionService();
 
-        network.blockPort(8080);
-        network.blockPort(443);
+        // Create the Facade
+        CommandCenterFacade commandCenter =
+                new CommandCenterFacade(network, users, encryption);
 
-        users.lockUserAccounts(compromisedUsers);
+        // Menu
+        System.out.println("=== SECURITY COMMAND CENTER ===");
+        System.out.println("1. Lockdown");
+        System.out.println("2. Lift Lockdown");
+        System.out.println("3. Maintenance");
+        System.out.print("Choose an option: ");
 
-        encryption.encryptDatabase("Customer_Records");
+        int choice = scanner.nextInt();
 
-        network.divertTraffic();
+        switch (choice) {
 
-        System.out.println();
+            case 1:
+                commandCenter.initiateEmergencyLockdown();
+                break;
 
-        // All-Clear
-        System.out.println("=== ALL-CLEAR ===");
+            case 2:
+                commandCenter.liftEmergencyLockdown();
+                break;
 
-        network.unblockPort(8080);
-        network.unblockPort(443);
+            case 3:
+                commandCenter.enableMaintenanceMode();
+                break;
 
-        users.unlockUserAccounts(compromisedUsers);
+            default:
+                System.out.println("Invalid option.");
+        }
 
-        encryption.decryptDatabase("Customer_Records");
+        scanner.close();
     }
 }
